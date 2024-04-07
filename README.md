@@ -23,4 +23,4 @@ This project focuses on the 10-minute-walk-distance areas of bus stops in Detroi
 ![](images/roadmap.png)
 
 ## Interactive map
-![view this map](https://billbillbilly.github.io/perceived-safety-around-bus-stops/)
+[view this map](https://billbillbilly.github.io/perceived-safety-around-bus-stops/)
