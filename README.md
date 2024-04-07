@@ -1,8 +1,13 @@
-# leaflet-map-simple
-A simple Leaflet map template for new users to fork their own copy, edit, and host on GitHub Pages
+# Mapping Perceived Safety Around Bus Stops In Detroit Using Crowdsourced Street Views
 
-## Link to live map (replace with link to your site)
-https://handsondataviz.github.io/leaflet-map-simple/
+## Background
+The concept of social infrastructure takes into account the physical places and organizations that shape the way people interact. The project, "Mapping Perceived Safety Around Bus Stops In Detroit Using Mapillary Street Views," is rooted in the idea that bus stops are not merely transit locations but pivotal social infrastructures that contribute significantly to the urban social fabric. The motivation behind this project is the recognition that the safety of these social spaces is paramount for fostering community interactions and ensuring the well-being of citizens. In Detroit, where the social infrastructure is in a critical phase of redevelopment, ensuring the safety of public spaces is essential for nurturing trust and community spirit.
 
-## Create your own
-See step-by-step tutorial at https://HandsOnDataViz.org, an open-access book by Jack Dougherty and Ilya Ilyankou
+## Object
+This project focuses on the 10-minute-walk-distance areas of bus stops in Detroit. 
+
+## Data
+- Street views (Mapillary)
+- Bus stop POIs (OSM)
+- Road lines (OSM)
+- Census data
