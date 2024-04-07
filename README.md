@@ -12,3 +12,12 @@ This project focuses on the 10-minute-walk-distance areas of bus stops in Detroi
 - Road lines (OSM)
 - Census data
 - PlacePulse2.0
+
+## Method
+### Tools
+- osmdata (R)
+- tidycensus (R)
+- fastai/pytorch (Python)
+- leaflet JS
+### Roadmap
+
