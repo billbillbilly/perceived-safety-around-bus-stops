@@ -11,3 +11,4 @@ This project focuses on the 10-minute-walk-distance areas of bus stops in Detroi
 - Bus stop POIs (OSM)
 - Road lines (OSM)
 - Census data
+- PlacePulse2.0
