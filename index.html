@@ -8,6 +8,9 @@
   <!-- Load Leaflet code library: see https://leafletjs.com/download.html -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css" integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14=" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js" integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet-ui@latest/dist/leaflet-ui.js"></script>
+  <script src="https://unpkg.com/leaflet-providers@latest/leaflet-providers.js"></script>
+  
 
   <!-- Position the map and title with Cascading Style Sheet (CSS) -->
   <style>
@@ -23,26 +26,36 @@
   <div id="map"></div>
 
   <!----------------------------script-------------------------------->
-  <!-- Create the interactive map content with JavaScript (.js) -->
   <script>
     /* Set up the initial map center and zoom level */
     var map = L.map('map', {
-      center: [42.343571, -83.062131], // EDIT coordinates to re-center map
-      zoom: 14,  // EDIT from 1 (zoomed out) to 18 (zoomed in)
-      scrollWheelZoom: true
+      center: [42.343571, -83.062131], // re-center map
+      zoom: 14,  // from 1 (zoomed out) to 18 (zoomed in)
+      scrollWheelZoom: true,
+      fullscreenControl: true,
+      searchControl: false,
+      minimapControl: false,
+      editInOSMControl: false,
+      layersControl: false,
+      locateControl: false,
     });
 
     /* display basemap tiles -- see others at https://leaflet-extras.github.io/leaflet-providers/preview/ */
     L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://osm.org/copyright">\
-          OpenStreetMap</a> contributors, &copy;\
-          <a href="https://carto.com/attribution">CARTO</a>'
+      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     }).addTo(map);
 
     /* Display a point marker with pop-up text */
     L.marker([42.343571, -83.062131]).addTo(map) 
     .bindPopup("Insert pop-up text here"); 
+
+    function onEachTract(feature, layer) {
+      // does this feature have a property named popupContent?
+      if (feature.properties && feature.properties.GEOID) {
+          layer.bindPopup(feature.properties.GEOID);
+      }
+    }
 
     fetch("data/detroit_tract_poly.geojson").then(res => res.json()).then(data => {
       // add GeoJSON layer to the map once the file is loaded
