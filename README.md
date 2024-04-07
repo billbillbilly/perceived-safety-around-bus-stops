@@ -20,4 +20,4 @@ This project focuses on the 10-minute-walk-distance areas of bus stops in Detroi
 - fastai/pytorch (Python)
 - leaflet JS
 ### Roadmap
-
+![](images/roadmap.png)
