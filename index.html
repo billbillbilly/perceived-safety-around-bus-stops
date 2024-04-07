@@ -1,71 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>leaflet-map-simple</title>
+  <title>Perceived-Safety-Around-Bus-Stops-In-Detroit</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="utf-8">
 
   <!-- Load Leaflet code library: see https://leafletjs.com/download.html -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css" integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14=" crossorigin="" />
+  <link rel="stylesheet" href="styles/styles.css">
   <script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js" integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg=" crossorigin=""></script>
   <script src="https://unpkg.com/leaflet-ui@latest/dist/leaflet-ui.js"></script>
   <script src="https://unpkg.com/leaflet-providers@latest/leaflet-providers.js"></script>
   
-
-  <!-- Position the map and title with Cascading Style Sheet (CSS) -->
-  <style>
-  body { margin:0; padding:0; }
-  #map { position: absolute; top:0; bottom:0; right:0; left:0; }
-  #map-title { position: relative; margin-top: 10px; margin-left: 50px; float: left; background: white; border: 2px solid rgba(0,0,0,0.2); padding: 6px 8px; font-family: Helvetica; font-weight: bold; font-size: 24px; z-index: 800; }
-  </style>
 </head>
 <body>
-
-  <!-- Display the map and title with HTML division tags  -->
-  <div id="map-title">Perceived Safety Around Bus Stops In Detroit</div>
-  <div id="map"></div>
+  <div class="appLayout">
+    <!-- box1: information panel -->
+    <div class="infoPanel">
+      <div id="map-title">Perceived Safety Around Bus Stops In Detroit</div>
+      <div>
+        <label for="census">Display Census data:</label> 
+        <input type="checkbox" id="census" onclick="checkCensus()">
+        <div class="dropdown" id="censusDropdown">
+          <button onclick="showitems()" class="dropbtn" id="censusdropbtn">bus commuters</button>
+          <div id="itemsDropdown" class="dropdown-content"></div>
+        </div>
+      </div>
+    </div>
+    <!-- box2: map -->
+    <div class="map" id="map"></div>
+  </div>
 
   <!----------------------------script-------------------------------->
-  <script>
-    /* Set up the initial map center and zoom level */
-    var map = L.map('map', {
-      center: [42.343571, -83.062131], // re-center map
-      zoom: 14,  // from 1 (zoomed out) to 18 (zoomed in)
-      scrollWheelZoom: true,
-      fullscreenControl: true,
-      searchControl: false,
-      minimapControl: false,
-      editInOSMControl: false,
-      layersControl: false,
-      locateControl: false,
-    });
-
-    /* display basemap tiles -- see others at https://leaflet-extras.github.io/leaflet-providers/preview/ */
-    L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-    }).addTo(map);
-
-    /* Display a point marker with pop-up text */
-    L.marker([42.343571, -83.062131]).addTo(map) 
-    .bindPopup("Insert pop-up text here"); 
-
-    function onEachTract(feature, layer) {
-      // does this feature have a property named popupContent?
-      if (feature.properties && feature.properties.GEOID) {
-          layer.bindPopup(feature.properties.GEOID);
-      }
-    }
-
-    fetch("data/detroit_tract_poly.geojson").then(res => res.json()).then(data => {
-      // add GeoJSON layer to the map once the file is loaded
-      const censusTractLayer = L.geoJSON(data, {
-      style(feature) {
-        return feature.properties;
-      }
-    }).addTo(map);
-    });
-    
-  </script>
+  <script src="js/main.js"></script>
 </body>
 </html>
