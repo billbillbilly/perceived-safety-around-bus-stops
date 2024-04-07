@@ -22,28 +22,37 @@
   <div id="map-title">Perceived Safety Around Bus Stops In Detroit</div>
   <div id="map"></div>
 
+  <!----------------------------script-------------------------------->
   <!-- Create the interactive map content with JavaScript (.js) -->
   <script>
+    /* Set up the initial map center and zoom level */
+    var map = L.map('map', {
+      center: [42.343571, -83.062131], // EDIT coordinates to re-center map
+      zoom: 14,  // EDIT from 1 (zoomed out) to 18 (zoomed in)
+      scrollWheelZoom: true
+    });
 
-  /* Set up the initial map center and zoom level */
-  var map = L.map('map', {
-    center: [42.343571, -83.062131], // EDIT coordinates to re-center map
-    zoom: 12,  // EDIT from 1 (zoomed out) to 18 (zoomed in)
-    scrollWheelZoom: false
-  });
+    /* display basemap tiles -- see others at https://leaflet-extras.github.io/leaflet-providers/preview/ */
+    L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://osm.org/copyright">\
+          OpenStreetMap</a> contributors, &copy;\
+          <a href="https://carto.com/attribution">CARTO</a>'
+    }).addTo(map);
 
-  /* display basemap tiles -- see others at https://leaflet-extras.github.io/leaflet-providers/preview/ */
-  L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://osm.org/copyright">\
-        OpenStreetMap</a> contributors, &copy;\
-        <a href="https://carto.com/attribution">CARTO</a>'
-  }).addTo(map);
+    /* Display a point marker with pop-up text */
+    L.marker([42.343571, -83.062131]).addTo(map) 
+    .bindPopup("Insert pop-up text here"); 
 
-  /* Display a point marker with pop-up text */
-  L.marker([42.343571, -83.062131]).addTo(map) // EDIT marker coordinates
-  .bindPopup("Insert pop-up text here"); // EDIT pop-up text message
-
+    fetch("data/detroit_tract_poly.geojson").then(res => res.json()).then(data => {
+      // add GeoJSON layer to the map once the file is loaded
+      const censusTractLayer = L.geoJSON(data, {
+      style(feature) {
+        return feature.properties;
+      }
+    }).addTo(map);
+    });
+    
   </script>
 </body>
 </html>
