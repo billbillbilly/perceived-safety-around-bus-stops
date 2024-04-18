@@ -11,6 +11,8 @@
   <script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js" integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg=" crossorigin=""></script>
   <script src="https://unpkg.com/leaflet-ui@latest/dist/leaflet-ui.js"></script>
   <script src="https://unpkg.com/leaflet-providers@latest/leaflet-providers.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chroma-js@2.1.0/chroma.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js" charset="utf-8"></script>
   
 </head>
 <body>
@@ -18,20 +20,74 @@
     <!-- box1: information panel -->
     <div class="infoPanel">
       <div id="map-title">Perceived Safety Around Bus Stops In Detroit</div>
-      <div>
-        <label for="census">Display Census data:</label> 
-        <input type="checkbox" id="census" onclick="checkCensus()">
-        <div class="dropdown" id="censusDropdown">
-          <button onclick="showitems()" class="dropbtn" id="censusdropbtn">bus commuters</button>
-          <div id="itemsDropdown" class="dropdown-content"></div>
+      <div style="margin-bottom: 5%;">
+        <!-- text -->
+        <p class="subtitle">Perceived safety assessment</p> 
+        <div class="main_text">
+          <p>
+            1. For each bus stop, street view images were collected around the intersections of roads 
+            within the 10-minute-walk distance (800m buffer area).  
+          </p>
+          <p>
+            2. All street views were randomly paired and each pair was compared by an artificial neural 
+            netwoork trained on PlacePulsee2.0 dataset to determine which view is safer in terms of 
+            visual perception.
+          </p>
+          <p>
+            3. Based on the pairwise comparison of street views, ELO rating system, a ranking system to 
+            measure the skills of players competing at a sport, was employed to quantify the ranking 
+            score of safety perceptions.
+          </p>
+          <p>
+            4. To study the distribution of perceived safety in the proximity of bus stops, the mean, 
+            median, and stadard deviation of safety ranking scores of street views for each bus stop 
+            were calcualted.
+          </p>
+        </div>
+        <div style="margin-bottom: 5%;">
+          <div id="safety_hist" class="hist"></div>
+        </div>
+        <p class="subtitle">Social inequalities in perceived safety</p> 
+        <div class="main_text">
+          <p>
+            To explore the existence of social inequalities in perceived safety, tract-level demographic 
+            data (such as average median income and poverty population%) was aggreagated with the 10-minute-walk 
+            distance of each bus stop. 
+          </p>
+        </div>
+        <!-- show data -->
+        <div class="datamenu" id="databtns">
+          <div class="dropdown" id="busDropdown">
+            <p style="margin-bottom: 5px">Bus stops data:</p>
+            <button onclick="showitems(this.id)" class="dropbtn" id="busdropbtn">safety mean</button>
+            <div id="dataDropdown" class="dropdown-content"></div>
+            <button onclick="showitems(this.id)" class="dropbtn" id="busdropbtn2">select demographic data</button>
+            <div id="dataDropdown2" class="dropdown-content"></div>
+          </div>
         </div>
       </div>
+      <div> 
+        <div class="dropdown" id="censusDropdown" style="margin-bottom: 20px;">
+          <p style="margin-bottom: 5px;">2022 Census tract data:</p>
+          <button onclick="showitems(this.id)" class="dropbtn" id="censusdropbtn" style="margin-top: 0;">bus commuters%</button>
+          <div id="itemsDropdown" class="dropdown-content"></div>
+        </div>
+        <label for="census" style="font-size: 9px;">Display Census tract data:</label>
+        <input type="checkbox" id="census" onclick="checkCensus()">
+      </div>
+      <footer>
+        <p>contact - xiaohaoy[at]umich[dot]edu</p>
+        <p>©xiaohaoYANG</p>
+      </footer>
     </div>
     <!-- box2: map -->
-    <div class="map" id="map"></div>
+    <div class="map" id="map">
+      <div id="datalegend"></div>
+      <div id="censuslegend"></div>
+    </div>
   </div>
 
-  <!----------------------------script-------------------------------->
+  <!-----------------------------script-------------------------------->
   <script src="js/main.js"></script>
 </body>
 </html>
