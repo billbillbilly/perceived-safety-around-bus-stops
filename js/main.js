@@ -1,6 +1,7 @@
 const BusPropertyList = [
     'safety mean', 'safety median', 
-    'safety standard deviation'
+    'safety standard deviation',
+    'clusters'
 ];
 let currentBusProperty = 'safety mean';
 let currentBusTractProperty = 'select demographic data';
@@ -18,7 +19,9 @@ data_color_band = data_color_band.reverse();
 let censusScaleBreaks = [0, 0.013790178081690863, 
     0.033642517248807104, 0.06545874154354368, 
     0.1209903482708275, 0.48109965635738833];
-let busScaleBreaks = [0, 7, 27, 51, 81, 391];
+let busScaleBreaks = [0.3330510065723543, 0.3558416079522913, 
+    0.35918351466718434, 0.36229217450132406, 
+    0.3662227432124251, 0.3748221604705592];
 
 let safety_mean;
 let safety_sd;
@@ -30,7 +33,6 @@ let safety_quantile_100;
 let bus_commuters;
 let median_income;
 let poverty_pop;
-
 
 /* Set up the initial map center and zoom level */
 let map = L.map(
@@ -56,7 +58,7 @@ L.tileLayer(
 
 let busStopLayer = new L.GeoJSON().addTo(map);
 let censusTractLayer = new L.GeoJSON().addTo(map);
-
+let datainfo = L.control({position: 'bottomleft'});
 
 /* data visualizatoin - distribution */
 fetch("data/bus_stops_dataset.geojson").then(res => res.json()).then(
@@ -107,42 +109,6 @@ fetch("data/bus_stops_dataset.geojson").then(res => res.json()).then(
                     }
                 },
             },
-            // xaxis4: {
-            //     showline: true,
-            //     title: {
-            //         text: 'safety quantile 50%',
-            //         font: {
-            //           family: 'monospace',
-            //           size: 8,
-            //           color: 'white',
-            //           automargin: true,
-            //         }
-            //     },
-            // },
-            // xaxis5: {
-            //     showline: true,
-            //     title: {
-            //         text: 'safety quantile 75%',
-            //         font: {
-            //           family: 'monospace',
-            //           size: 8,
-            //           color: 'white',
-            //           automargin: true,
-            //         }
-            //     },
-            // },
-            // xaxis6: {
-            //     showline: true,
-            //     title: {
-            //         text: 'safety quantile 100%',
-            //         font: {
-            //           family: 'monospace',
-            //           size: 8,
-            //           color: 'white',
-            //           automargin: true,
-            //         }
-            //     },
-            // },
             yaxis: {
                 showgrid: false,
                 showline: true,
@@ -163,18 +129,6 @@ fetch("data/bus_stops_dataset.geojson").then(res => res.json()).then(
                 showgrid: false,
                 showline: true
             },
-            // yaxis4: {
-            //     showgrid: false,
-            //     showline: true
-            // },
-            // yaxis5: {
-            //     showgrid: false,
-            //     showline: true
-            // },
-            // yaxis6: {
-            //     showgrid: false,
-            //     showline: true
-            // },
             width: 450, 
             height: 150,
             paper_bgcolor: "rgba(0,0,0,0)", 
@@ -193,17 +147,13 @@ fetch("data/bus_stops_dataset.geojson").then(res => res.json()).then(
         safety_mean = data.features.map(feature => feature.properties.safety_mean);
         safety_median = data.features.map(feature => feature.properties.safety_median);
         safety_sd = data.features.map(feature => feature.properties.safety_sd);
-        // safety_quantile_0 = data.features.map(feature => feature.properties.safety_quantile_0);
-        // safety_quantile_25 = data.features.map(feature => feature.properties.safety_quantile_25);
-        // safety_quantile_50 = data.features.map(feature => feature.properties.safety_quantile_50);
-        // safety_quantile_75 = data.features.map(feature => feature.properties.safety_quantile_75);
-        // safety_quantile_100 = data.features.map(feature => feature.properties.safety_quantile_100);
         bus_commuters = data.features.map(feature => feature.properties.bus_commuter);
         median_income = data.features.map(feature => feature.properties.median_income);
         poverty_pop = data.features.map(feature => feature.properties.poverty_pop);
         unemployed_pop = data.features.map(feature => feature.properties.unemployed_pop);
         higher_edu = data.features.map(feature => feature.properties.higher_edu);
         less_edu = data.features.map(feature => feature.properties.less_edu);
+        clusters = data.features.map(feature => feature.properties.cluster);
         const data_list =[
             safety_mean, 
             safety_median, 
@@ -227,16 +177,52 @@ fetch("data/bus_stops_dataset.geojson").then(res => res.json()).then(
     }
 );
 
-const addScatter = () => {
-    let d = 0;
+const onEachStop = (feature, layer) => {
+    if (feature.properties.safety_mean) {
+        layer.on({
+            mouseover: highlightFeature,
+            mouseout: resetHighlight
+        });
+    }
 }
 
-// const onEachStop = (feature, layer) => {
-//     // does this feature have a property named popupContent?
-//     if (feature.properties && feature.properties.GEOID) {
-//         layer.bindPopup(feature.properties.GEOID);
-//     }
-// }
+const highlightFeature = (e) => {
+    let layer = e.target;
+    layer.setStyle({
+        weight: 10,
+        color: 'yellow',
+        fillOpacity: 1.0
+    });
+    layer.bringToFront();
+    datainfo.update(layer.feature.properties);
+}
+
+const resetHighlight = (e) => {
+    busStopLayer.resetStyle(e.target);
+    datainfo.update();
+}
+
+datainfo.onAdd = function (map) {
+    this._div = L.DomUtil.create('div', 'datainfo');
+    this.update();
+    return this._div;
+};
+
+// method that we will use to update the control based on feature properties passed
+datainfo.update = function (props) {
+    this._div.innerHTML = (props ?
+        '<a>Name: ' + props.bus_stop + '</a>' + '<br/>'+
+        '<a>Perceived safety mean: ' + props.safety_mean + '</a>' + '<br/>'+
+        '<a>Bus commuters (%): ' + props.bus_commuter + '</a>' + '<br/>'+
+        '<a>Average median income: ' + props.median_income + '</a>' + '<br/>'+
+        '<a>Poverty population (%): ' + props.poverty_pop + '</a>' + '<br/>'+
+        '<a>Unemployment population (%): ' + props.unemployed_pop + '</a>' + '<br/>'+
+        '<a>Highly educated population (%): ' + props.higher_edu + '</a>' + '<br/>'+
+        '<a>Less eaducated population (%): ' + props.less_edu + '</a>' + '<br/>'
+        : '<a>Hover over a bus stop</a>');
+};
+
+datainfo.addTo(map);
 
 // update bus stop POIs
 const update_bus = () => {
@@ -244,47 +230,35 @@ const update_bus = () => {
     fetch("data/bus_stops_dataset.geojson").then(res => res.json()).then(
         data => {
             geojsonBusData = data;
-            busStopLayer = L.geoJSON(data, {pointToLayer:addPoint}).addTo(map);
+            busStopLayer = L.geoJSON(data, {
+                pointToLayer: addPoint, 
+                onEachFeature: onEachStop}).addTo(map);
         }
     );
     getdatalegend();
+    
     busStopLayer.bringToFront();
 }
 
 const addPoint = (feature, latlng) => {
     let fillColor;
     if (currentBusProperty === BusPropertyList[0]){
-        let quantileBreaks = chroma.limits(safety_mean, 'q', 5);
-        busScaleBreaks = quantileBreaks;
-        const colorScale = chroma.scale(data_color_band).domain(quantileBreaks);
+        busScaleBreaks = chroma.limits(safety_mean, 'q', 5);
+        const colorScale = chroma.scale(data_color_band).domain(busScaleBreaks);
         fillColor = colorScale(feature.properties.safety_mean).hex();
     } else if (currentBusProperty === BusPropertyList[2]) {
-        let quantileBreaks = chroma.limits(safety_sd, 'q', 5);
-        busScaleBreaks = quantileBreaks;
-        const colorScale = chroma.scale(data_color_band).domain(quantileBreaks);
+        busScaleBreaks = chroma.limits(safety_sd, 'q', 5);
+        const colorScale = chroma.scale(data_color_band).domain(busScaleBreaks);
         fillColor = colorScale(feature.properties.safety_sd).hex();
     } else if (currentBusProperty === BusPropertyList[1]) {
-        let quantileBreaks = chroma.limits(safety_median, 'q', 5);
-        busScaleBreaks = quantileBreaks;
-        const colorScale = chroma.scale(data_color_band).domain(quantileBreaks);
+        busScaleBreaks = chroma.limits(safety_median, 'q', 5);
+        const colorScale = chroma.scale(data_color_band).domain(busScaleBreaks);
         fillColor = colorScale(feature.properties.safety_median).hex();
-    } 
-    // else if (currentBusProperty === BusPropertyList[3]) {
-    //     let quantileBreaks = chroma.limits(bus_commuters, 'q', 5);
-    //     busScaleBreaks = quantileBreaks;
-    //     const colorScale = chroma.scale(color_band).domain(quantileBreaks);
-    //     fillColor = colorScale(feature.properties.bus_commuter).hex();
-    // } else if (currentBusProperty === BusPropertyList[4]) {
-    //     let quantileBreaks = chroma.limits(median_income, 'q', 5);
-    //     busScaleBreaks = quantileBreaks;
-    //     const colorScale = chroma.scale(color_band).domain(quantileBreaks);
-    //     fillColor = colorScale(feature.properties.median_income).hex();
-    // } else if (currentBusProperty === BusPropertyList[5]) {
-    //     let quantileBreaks = chroma.limits(poverty_pop, 'q', 5);
-    //     busScaleBreaks = quantileBreaks;
-    //     const colorScale = chroma.scale(color_band).domain(quantileBreaks);
-    //     fillColor = colorScale(feature.properties.poverty_pop).hex();
-    // }
+    } else if (currentBusProperty === BusPropertyList[3]) {
+        busScaleBreaks = chroma.limits(clusters, 'q', 5);
+        const colorScale = chroma.scale(data_color_band).domain(busScaleBreaks);
+        fillColor = colorScale(feature.properties.cluster).hex();
+    }
     let ptSsize = 4;
     let target_feature = 0;
     if (currentBusTractProperty === TractPropertyList[0]) {
@@ -318,9 +292,6 @@ const addPoint = (feature, latlng) => {
         }
         ptSsize = max_min_func(feature.properties.less_edu);
     }
-    // const max_min_func = (data) => {
-    //     return (data-Math.min(...median_income))/(Math.max(...median_income)-Math.min(...median_income))*8;
-    // }
     
     if (currentBusTractProperty === 'select demographic data') {
         ptSsize = 4;
@@ -342,37 +313,43 @@ const max_min = (input) => {
 }
 
 const getdatalegend = () => {
-    let datacolorScale;
-    if (TractPropertyList.includes(currentBusProperty)) {
-        datacolorScale = chroma.scale(color_band).domain(busScaleBreaks);
-        console.log('y');
-    } else {
-        datacolorScale = chroma.scale(data_color_band).domain(busScaleBreaks);
+    console.log(busScaleBreaks);
+    if (BusPropertyList.includes(currentBusProperty)) {
+        const datacolorScale = chroma.scale(data_color_band).domain(busScaleBreaks);
+        const datalegend = document.getElementById('datalegend');
+        datalegend.innerHTML = '<div class="buslegend-scale">';
+        let dataranges = [];
+        for (let i = 0; i < 5; i++) {
+            b1 = busScaleBreaks[i];
+            b2 = busScaleBreaks[i+1];
+            dataranges.push(`${Math.round(b1*1000)/1000} - ${Math.round(b2*1000)/1000}`);
+        }
+        let low_v = document.createElement('div');
+        let high_v = document.createElement('div');
+        low_v.innerHTML = `<a>low</a>`;
+        high_v.innerHTML = `<a>high</a>`;
+        if (currentBusProperty !== 'clusters') {
+            datalegend.children[0].appendChild(low_v);
+        }
+        for (let index = 0; index < dataranges.length; index++) {
+            const colorBox = document.createElement('div');
+            colorBox.className = 'buslegend-color-box';
+            colorBox.style.backgroundColor = datacolorScale(busScaleBreaks[index]).hex();
+            const rangeDiv = document.createElement('div');
+            rangeDiv.className = 'buslegend-range';
+            rangeDiv.appendChild(colorBox);
+            if (currentBusProperty === 'clusters') {
+                const clusterA = document.createElement('a');
+                clusterA.innerText = `${index+1}`;
+                rangeDiv.appendChild(clusterA);
+            }
+            datalegend.children[0].appendChild(rangeDiv);
+        }
+        if (currentBusProperty !== 'clusters') {
+            datalegend.children[0].appendChild(high_v);
+        }
+        datalegend.innerHTML += '</div>';
     }
-    const datalegend = document.getElementById('datalegend');
-    datalegend.innerHTML = '<div class="buslegend-scale">';
-    let dataranges = [];
-    for (let i = 0; i < 5; i++) {
-        b1 = busScaleBreaks[i];
-        b2 = busScaleBreaks[i+1]
-        dataranges.push(`${Math.round(b1*1000)/1000} - ${Math.round(b2*1000)/1000}`);
-    }
-    let low_v = document.createElement('div');
-    let high_v = document.createElement('div');
-    low_v.innerHTML = `<a>low</a>`;
-    high_v.innerHTML = `<a>high</a>`;
-    datalegend.children[0].appendChild(low_v);
-    dataranges.forEach((range, index) => {
-        const colorBox = document.createElement('div');
-        colorBox.className = 'buslegend-color-box';
-        colorBox.style.backgroundColor = datacolorScale(busScaleBreaks[index]).hex();
-        const rangeDiv = document.createElement('div');
-        rangeDiv.className = 'buslegend-range';
-        rangeDiv.appendChild(colorBox);
-        datalegend.children[0].appendChild(rangeDiv);
-    });
-    datalegend.children[0].appendChild(high_v);
-    datalegend.innerHTML += '</div>';
 }
 
 // Do not move
@@ -395,9 +372,8 @@ const tractStyle = (feature) => {
     let fillColor;
     if (currentTractProperty === TractPropertyList[0]){
         let data = geojsonCensusData.features.map(feature => feature.properties.bus_pop);
-        let quantileBreaks = chroma.limits(data, 'q', 5);
-        censusScaleBreaks = quantileBreaks;
-        const colorScale = chroma.scale(color_band).domain(quantileBreaks);
+        censusScaleBreaks = chroma.limits(data, 'q', 5);
+        const colorScale = chroma.scale(color_band).domain(censusScaleBreaks);
         fillColor = colorScale(feature.properties.bus_pop).hex();
     } else if (currentTractProperty === TractPropertyList[1]) {
         let data = geojsonCensusData.features.map(feature => feature.properties.median_income);

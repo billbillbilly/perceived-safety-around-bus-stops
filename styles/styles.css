@@ -151,6 +151,11 @@ footer {
     margin-right: 10px;
 }
 
+/* .datainfo {
+    display: flex;
+    position: relative;
+} */
+
 .main_text {
     font-size: clamp(11px, 0.7vw, 13px);
     margin-left: 5%;
@@ -190,12 +195,16 @@ footer {
 }
 
 /* font */
-a,label,button,p {
+a,label,button,p,h4 {
     font-family: monospace;
 }
 
 .buslegend-scale a {
     color: #ffffff;
+}
+
+.datainfo a {
+    color: rgba(255, 221, 0, 0.6);
 }
 
 a {
