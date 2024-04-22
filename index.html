@@ -31,7 +31,7 @@
           <p>
             2. All street views were randomly paired and each pair was compared by an artificial neural 
             netwoork trained on PlacePulsee2.0 dataset to determine which view is safer in terms of 
-            visual perception.
+            visual safety perception.
           </p>
           <p>
             3. Based on the pairwise comparison of street views, ELO rating system, a ranking system to 
@@ -52,13 +52,16 @@
           <p>
             To explore the existence of social inequalities in perceived safety, tract-level demographic 
             data (such as average median income and poverty population%) was aggreagated with the 10-minute-walk 
-            distance of each bus stop. Regression model - spatial lag (Y = ρWY + βX + α + ϵ) - was used to examine 
+            distance of each bus stop. Regression model - spatial lag (Y = βX + α + ρWY) - was used to examine 
             the relationship between perceived safety with each demographic variable with the nearest neighbor 
             distance matrix. K-means was employed to cluster bus stops based on perceived safety and all 
             demographic variables.
           </p>
         </div>
         <!-- show data -->
+        <div id="sl">
+          
+        </div>
         <div class="datamenu" id="databtns">
           <div class="dropdown" id="busDropdown">
             <p style="margin-bottom: 5px">Bus stops data:</p>

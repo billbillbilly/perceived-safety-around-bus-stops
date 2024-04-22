@@ -23,16 +23,24 @@ let busScaleBreaks = [0.3330510065723543, 0.3558416079522913,
     0.35918351466718434, 0.36229217450132406, 
     0.3662227432124251, 0.3748221604705592];
 
+let sl_list = [
+    'Y = -0.015 × bus_commuters - 0.073 + 0.927WY',
+    'Y = 7.99e-08 × median_income - 0.081 + 0.924WY',
+    'Y = −0.012 × poverty_pop - 0.078 + 0.919WY',
+    'Y = -0.0002 × unemployed_pop - 0.068 + 0.933WY',
+    'Y = 0.002 × higher_edu - 0.069 + 0.933WY',
+    'Y = − 0.017 × less_edu - 0.076 + 0.924WY '
+];
+
 let safety_mean;
 let safety_sd;
-let safety_quantile_0;
-let safety_quantile_25;
-let safety_quantile_50;
-let safety_quantile_75;
-let safety_quantile_100;
 let bus_commuters;
 let median_income;
 let poverty_pop;
+let unemployed_pop;
+let higher_edu;
+let less_edu;
+let bus_data_array = [];
 
 /* Set up the initial map center and zoom level */
 let map = L.map(
@@ -154,6 +162,7 @@ fetch("data/bus_stops_dataset.geojson").then(res => res.json()).then(
         higher_edu = data.features.map(feature => feature.properties.higher_edu);
         less_edu = data.features.map(feature => feature.properties.less_edu);
         clusters = data.features.map(feature => feature.properties.cluster);
+        bus_data_array = [safety_mean, safety_median, safety_sd];
         const data_list =[
             safety_mean, 
             safety_median, 
@@ -236,7 +245,6 @@ const update_bus = () => {
         }
     );
     getdatalegend();
-    
     busStopLayer.bringToFront();
 }
 
@@ -313,8 +321,11 @@ const max_min = (input) => {
 }
 
 const getdatalegend = () => {
-    console.log(busScaleBreaks);
     if (BusPropertyList.includes(currentBusProperty)) {
+        if (currentBusProperty !== 'clusters' && bus_data_array.length !== 0) {
+            let index_ = currentBusProperty.indexOf(currentBusProperty);
+            busScaleBreaks = chroma.limits(bus_data_array[index_], 'q', 5);
+        }
         const datacolorScale = chroma.scale(data_color_band).domain(busScaleBreaks);
         const datalegend = document.getElementById('datalegend');
         datalegend.innerHTML = '<div class="buslegend-scale">';
@@ -349,6 +360,17 @@ const getdatalegend = () => {
             datalegend.children[0].appendChild(high_v);
         }
         datalegend.innerHTML += '</div>';
+    }
+}
+
+const showRegression = (index) => {
+    console.log(index);
+    const sldiv = document.getElementById('sl');
+    if (index >= 0) {
+        sldiv.innerHTML = `<a>${sl_list[index]}</a>` + 
+        '<br/>' + '<a>(p < 0.001)</a>';
+    } else {
+        sldiv.innerHTML = `<a></a>`;
     }
 }
 
@@ -508,6 +530,8 @@ const additems2dropdown = (input) => {
             init_item.addEventListener("click", (e) => {
                 document.getElementById('busdropbtn2').textContent = 'select demographic data';
                 currentBusTractProperty = 'select demographic data';
+                let index_ = TractPropertyList.indexOf(currentBusTractProperty);
+                showRegression(index_);
                 update_bus();
             });
             document.getElementById("dataDropdown2").appendChild(init_item);
@@ -528,6 +552,8 @@ const additems2dropdown = (input) => {
                 item.addEventListener("click", (e) => {
                     document.getElementById('busdropbtn2').textContent = element;
                     currentBusTractProperty = element;
+                    let index_ = TractPropertyList.indexOf(currentBusTractProperty);
+                    showRegression(index_);
                     update_bus();
                 });
                 document.getElementById("dataDropdown2").appendChild(item);
